@@ -1,5 +1,6 @@
 import asana
 import json
+from datetime import datetime
 
 # https://github.com/Asana/python-asana
 
@@ -30,30 +31,34 @@ print("Authenticated for Asana with email " + me['email'] + ", name " + me['name
 
 
 
-##########   DRAFT STUFF NOT USED   ###########
-
-#orgTeams = list(client.teams.get_teams_for_organization(orgId))
-#print("Teams: " + str(len(orgTeams)))
-
-#myTeams = list(client.teams.get_teams_for_user("me", {"organization": orgId}))
-#for team in myTeams:
-#	print(team)
-#	projects = list(client.projects.get_projects_for_team(team['gid']))
-#	for project in projects:
-#		print(project)
-#print("My Teams: " + str(len(myTeams)))
-
-
-
 ##########   THE ACTUAL LOGIC   ###########
+
+def writeToFile(content, fileName):
+	with open("Output-" + fileName, "w") as file:
+		file.write(content)
+
+def writeTeamsToFile():
+	teams = client.teams.get_teams_for_organization(orgId)
+	output = "\n".join(map(str, teams))
+	writeToFile(output, "Teams.txt")
+	print("Wrote teams to file.")
+
+def writeMyTeamsToFile():
+	print("Writing my teams to file...")
+	myTeams = list(client.teams.get_teams_for_user("me", {"organization": orgId}))
+	output = ""
+	for team in myTeams:
+		teamId = team['gid']
+		output += "Team: \n" + team['name'] + " (" + teamId + ")\n\n Projects: \n"
+		projects = client.projects.get_projects_for_team(teamId)
+		output += "\n".join(map(lambda project: "  - " + project['name'] + " (" + project['gid'] + ")", projects)) + "\n\n\n\n"
+	writeToFile(output, "MyTeams.txt")
+	print("Wrote my teams to file.")
 
 def writeUsersToFile():
 	users = client.users.get_users_for_workspace(orgId, {"opt_fields": ["email"]})
-	userString = ""
-	for user in users:
-		userString += user['email'] + "\n"
-	with open("Output-AsanaUsers.txt", "w") as file:
-		file.write(userString)
+	usersString = "\n".join(map(lambda user: user['email'], users))
+	writeToFile(usersString, "AsanaUsers.txt")
 	print("Wrote users to file.")
 
 def createTask():
@@ -63,8 +68,18 @@ def createTask():
 	description = input("    Enter description of task: ")
 	task = client.tasks.create_task({'workspace': orgId, 'name': title, 'assignee': userId, 'notes': description})
 
+def writeMyTasks():
+	now = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+	tasks = client.tasks.find_all({"opt_fields": ["projects", "name", "due_on"]}, completed_since = now, workspace = orgId, assignee = userId)
+	output = "\n".join(map(str, tasks))
+	writeToFile(output, "MyTasks.txt")
+
+
 
 ##########   CALLING THE ACTUAL LOGIC   ###########
 
-writeUsersToFile()
+#writeUsersToFile()
+#writeTeamsToFile()
+#writeMyTeamsToFile()
+#writeMyTasks()
 createTask()
