@@ -65,6 +65,7 @@ def createTask():
 	# https://asana.readthedocs.io/en/latest/
 	print("Creating a task:")
 	title = input("    Enter title of task: ")
+	if title == "": return
 	description = input("    Enter description of task: ")
 	task = client.tasks.create_task({'workspace': orgId, 'name': title, 'assignee': userId, 'notes': description})
 
@@ -82,4 +83,9 @@ def writeMyTasks():
 #writeTeamsToFile()
 #writeMyTeamsToFile()
 #writeMyTasks()
-createTask()
+#createTask()
+
+while 0 == 0:
+	task = input("Enter '1' for creating a task: ")
+	if task != "1": break
+	createTask()
