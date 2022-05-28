@@ -1,5 +1,6 @@
 import asana
 import json
+import os
 from datetime import datetime
 
 # https://github.com/Asana/python-asana
@@ -7,6 +8,11 @@ from datetime import datetime
 
 
 ##########   AUTHENTICATION AND INITIAL SETUP ###########
+
+def clear(): os.system('clear')
+
+clear()
+print("Initializing and authenticating...")
 
 def getSettings():
 	# The following file should contain the following json properties:
@@ -27,6 +33,7 @@ client = getClient()
 me = client.users.me()
 orgId = me['workspaces'][0]['gid']
 userId = me['gid']
+
 print("Authenticated for Asana with email " + me['email'] + ", name " + me['name'] + ", and ID " + userId + ".")
 
 
@@ -43,8 +50,7 @@ def writeTeamsToFile():
 	writeToFile(output, "Teams.txt")
 	print("Wrote teams to file.")
 
-def writeMyTeamsToFile():
-	print("Writing my teams to file...")
+def writeMyTeamsAndProjectsToFile():
 	myTeams = list(client.teams.get_teams_for_user("me", {"organization": orgId}))
 	output = ""
 	for team in myTeams:
@@ -52,8 +58,8 @@ def writeMyTeamsToFile():
 		output += "Team: \n" + team['name'] + " (" + teamId + ")\n\n Projects: \n"
 		projects = client.projects.get_projects_for_team(teamId)
 		output += "\n".join(map(lambda project: "  - " + project['name'] + " (" + project['gid'] + ")", projects)) + "\n\n\n\n"
-	writeToFile(output, "MyTeams.txt")
-	print("Wrote my teams to file.")
+	writeToFile(output, "MyTeamsAndProjects.txt")
+	print("Wrote my teams and projects to file.")
 
 def writeUsersToFile():
 	users = client.users.get_users_for_workspace(orgId, {"opt_fields": ["email"]})
@@ -74,18 +80,24 @@ def writeMyTasks():
 	tasks = client.tasks.find_all({"opt_fields": ["projects", "name", "due_on"]}, completed_since = now, workspace = orgId, assignee = userId)
 	output = "\n".join(map(str, tasks))
 	writeToFile(output, "MyTasks.txt")
+	print("Wrote my tasks to file.")
 
 
 
 ##########   CALLING THE ACTUAL LOGIC   ###########
 
-#writeUsersToFile()
-#writeTeamsToFile()
-#writeMyTeamsToFile()
-#writeMyTasks()
-#createTask()
-
 while 0 == 0:
-	task = input("Enter '1' for creating a task: ")
-	if task != "1": break
-	createTask()
+	print('1: Create task')
+	print('2: Output users, teams, my teams & projects, and my tasks')
+	task = input("Enter your choice: ")
+	match task:
+		case '1':
+			createTask()
+		case '2':
+			writeUsersToFile()
+			writeTeamsToFile()
+			writeMyTeamsAndProjectsToFile()
+			writeMyTasks()
+		case _:
+			break
+	clear()
