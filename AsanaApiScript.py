@@ -75,29 +75,38 @@ def createTask():
 	description = input("    Enter description of task: ")
 	task = client.tasks.create_task({'workspace': orgId, 'name': title, 'assignee': userId, 'notes': description})
 
-def writeMyTasks():
+def writeMyIncompleteTasks():
 	now = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 	tasks = client.tasks.find_all({"opt_fields": ["projects", "name", "due_on"]}, completed_since = now, workspace = orgId, assignee = userId)
 	output = "\n".join(map(str, tasks))
-	writeToFile(output, "MyTasks.txt")
-	print("Wrote my tasks to file.")
+	writeToFile(output, "MyIncompleteTasks.txt")
+	print("Wrote my incomplete tasks to file.")
+
+def writeAllMyTasks():
+	tasks = client.tasks.find_all({"opt_fields": ["projects", "name", "due_on", "completed", "created_at", "modified_at", "completed_at"]}, workspace = orgId, assignee = userId)
+	output = "\n".join(map(str, tasks))
+	writeToFile(output, "AllMyTasks.txt")
+	print("Wrote all my tasks to file.")
 
 
 
 ##########   CALLING THE ACTUAL LOGIC   ###########
 
 while 0 == 0:
+	print("\n\nSelect what you'd like to do:")
 	print('1: Create task')
-	print('2: Output users, teams, my teams & projects, and my tasks')
+	print("2: Output my tasks")
+	print("3: Output all users, all teams, my teams, and my projects")
 	task = input("Enter your choice: ")
 	match task:
 		case '1':
 			createTask()
 		case '2':
+			writeMyIncompleteTasks()
+			writeAllMyTasks()
+		case '3':
 			writeUsersToFile()
 			writeTeamsToFile()
 			writeMyTeamsAndProjectsToFile()
-			writeMyTasks()
 		case _:
 			break
-	clear()
