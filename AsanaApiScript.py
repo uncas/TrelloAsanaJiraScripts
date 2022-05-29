@@ -4,6 +4,9 @@ import os
 from datetime import datetime
 
 # https://github.com/Asana/python-asana
+# https://asana.readthedocs.io/en/latest/
+# https://juaancabsou.medium.com/asana-automation-with-python-63c32c46c666
+# https://stackoverflow.com/questions/30601424/how-can-i-create-a-new-project-with-tasks-in-asana-using-python
 
 
 
@@ -68,7 +71,6 @@ def writeUsersToFile():
 	print("Wrote users to file.")
 
 def createTask():
-	# https://asana.readthedocs.io/en/latest/
 	print("Creating a task:")
 	title = input("    Enter title of task: ")
 	if title == "": return
@@ -88,6 +90,14 @@ def writeAllMyTasks():
 	writeToFile(output, "AllMyTasks.txt")
 	print("Wrote all my tasks to file.")
 
+def investigateMyTasks():
+	myTasks = client.user_task_lists.get_user_task_list_for_user(userId, workspace = orgId)
+	print(myTasks)
+	myTasksId = myTasks['gid']
+	sections = client.sections.get_sections_for_project(myTasksId)
+	output = "\n".join(map(str, sections))
+	print(output)
+
 
 
 ##########   CALLING THE ACTUAL LOGIC   ###########
@@ -97,6 +107,7 @@ while 0 == 0:
 	print('1: Create task')
 	print("2: Output my tasks")
 	print("3: Output all users, all teams, my teams, and my projects")
+	print("4: Investigate 'My tasks'")
 	task = input("Enter your choice: ")
 	match task:
 		case '1':
@@ -108,5 +119,7 @@ while 0 == 0:
 			writeUsersToFile()
 			writeTeamsToFile()
 			writeMyTeamsAndProjectsToFile()
+		case "4":
+			investigateMyTasks()
 		case _:
 			break
