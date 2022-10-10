@@ -1,3 +1,5 @@
 AsanaSettings.json
 Output*
 .idea
+*.csv
+Log*.txt
