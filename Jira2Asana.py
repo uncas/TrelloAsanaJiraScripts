@@ -23,10 +23,32 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 			cellIndex += 1
 		return result
 
+	def getCollaborators(row, reporter, creator):
+		result = reporter + "," + creator
+		cellIndex = 0
+		for cell in row:
+			if cell:
+				if header[cellIndex] == "Watchers":
+					result += "," + cell
+			cellIndex += 1
+		return result
+
+	def concatIf(row, fromIndex, toIndex):
+		result = ""
+		hasValue = False
+		for index in range(fromIndex, toIndex+1):
+			value = row[index]
+			if value:
+				if hasValue:
+					result += ","
+				result += value
+				hasValue = True
+		return result
+
 	asanaCsvFileName = "Asana - " + fileNameWithoutExtension + ".csv"
 	asanaCsvfile = open(asanaCsvFileName, 'w')
 	csvwriter = csv.writer(asanaCsvfile, dialect='excel')
-	csvwriter.writerow(['Name', 'Description', 'Assignee', 'Collaborators', 'Due Date', 'Section / Column', 'Subtask of', 'Status', 'Priority', 'Type'])
+	csvwriter.writerow(['Name', 'Description', 'Assignee', 'Collaborators', 'Due Date', 'Section / Column', 'Subtask of', 'Status', 'Priority', 'Type', 'Reporter', 'Components', 'Labels'])
 
 	with open(jiraCsvFileName, newline='') as f:
 		reader = csv.reader(f)
@@ -37,7 +59,7 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 			cellIndex = 0
 			for cell in row:
 				if cell:
-					log(str(cellIndex) + " / " + header[cellIndex] + ": " + cell)
+					log(str(cellIndex) + " / " + header[cellIndex] + ": " + cell[:50])
 				cellIndex += 1
 			if rowIndex > 0:
 				title = row[0]
@@ -45,14 +67,20 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 				status = row[4]
 				priority = row[11]
 				issueType = row[3]
+				sprint = row[243]
+				if row[222]: sprint = row[222]
+				dueDate = None
+				subtaskOf = None
 
 				jiraKey = row[1]
+				jiraLink = "https://jira.schibsted.io/browse/" + jiraKey
 				reporter = row[14]
 				created = row[16]
 				updated = row[17]
 				creator = row[15]
 
 				description = "Jira Key: " + jiraKey 
+				description += "\nJira Link: " + jiraLink
 				description += "\nReporter: " + reporter
 				description += "\nCreator: " + creator
 				description += "\nCreated: " + created
@@ -63,19 +91,19 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 
 				# TODO: INCLUDE THESE IN FINAL RUN:
 				assignee = None #row[13]
-				collaborators = None #reporter
+				collaborators = None #getCollaborators(row, reporter, creator)
 
-				# TODO: Add 23+24+25 / Component/s
-				#components = row[23]
-				# TODO: Add 28+29+30 / Labels: Labels
+				components = concatIf(row, 23, 25)
+				labels = concatIf(row, 28, 30)
 
-				dueDate = None
-				subtaskOf = None
-				section = reporter.replace("@schibsted.com", "")
-				csvwriter.writerow([title, description, assignee, collaborators, dueDate, section, subtaskOf, status, priority, issueType])
+				reporterUserName = reporter.replace("@schibsted.com", "")
+				section = "Backlog"
+				if sprint: section = sprint
+				csvwriter.writerow([title, description, assignee, collaborators, dueDate, section, subtaskOf, status, priority, issueType, reporterUserName, components, labels])
 			rowIndex += 1
 
 	asanaCsvfile.close()
 	logFile.close()
 
-convertJiraCsvToAsanaCsv("DBA Platform B_ST.csv")
+convertJiraCsvToAsanaCsv("DBA Platform B_ST 2.csv")
+convertJiraCsvToAsanaCsv("Motors-BST.csv")
