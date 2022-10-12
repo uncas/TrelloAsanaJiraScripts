@@ -8,7 +8,7 @@ from datetime import datetime
 
 # Set this to a positive number if you want to include only a few rows for testing:
 # TODO: Set this to 0 when running with complete data:
-sampleSize = 0
+sampleSize = 10
 
 def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 	fileNameWithoutExtension = jiraCsvFileName[:-4]
@@ -38,7 +38,7 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 	asanaCsvFileName = "Asana-" + fileNameWithoutExtension + ".csv"
 	asanaCsvfile = open(asanaCsvFileName, 'w')
 	csvwriter = csv.writer(asanaCsvfile, dialect='excel')
-	csvwriter.writerow(['Name', 'Description', 'Assignee', 'Collaborators', 'Due Date', 'Section / Column', 'Subtask of', 'Status', 'Priority', 'Type', 'Created by', 'Components', 'Labels', 'JiraKey', 'Created on'])
+	csvwriter.writerow(['Name', 'Description', 'Assignee', 'Collaborators', 'Due Date', 'Section / Column', 'Subtask of', 'Status', 'Priority', 'Type', 'Created by', 'Components', 'Labels', 'JiraKey', 'Created on', 'Project'])
 
 	def mapAndWriteRow(row):
 		title = getValue(row, "Summary")
@@ -53,6 +53,7 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 		components = ",".join(getValues(row, "Component/s"))
 		labels = ",".join(getValues(row, "Labels"))
 		created = getValue(row, "Created")
+		project = getValue(row, "Project name")
 
 		createdDate = datetime.strptime(created[:10], '%d.%m.%Y')
 		createdField = datetime.strftime(createdDate, '%m/%d/%y')
@@ -81,7 +82,7 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 		assigneeField = None
 		collaborators = None
 
-		csvwriter.writerow([title, descriptionField, assigneeField, collaborators, dueDate, section, subtaskOf, status, priority, issueType, createdByField, components, labels, jiraKey, createdField])
+		csvwriter.writerow([title, descriptionField, assigneeField, collaborators, dueDate, section, subtaskOf, status, priority, issueType, createdByField, components, labels, jiraKey, createdField, project])
 
 
 	with open(jiraCsvFileName, newline='') as f:
