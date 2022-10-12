@@ -8,7 +8,7 @@ from datetime import datetime
 
 # Set this to a positive number if you want to include only a few rows for testing:
 # TODO: Set this to 0 when running with complete data:
-sampleSize = 10
+sampleSize = 0
 
 def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 	fileNameWithoutExtension = jiraCsvFileName[:-4]
@@ -38,7 +38,7 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 	asanaCsvFileName = "Asana-" + fileNameWithoutExtension + ".csv"
 	asanaCsvfile = open(asanaCsvFileName, 'w')
 	csvwriter = csv.writer(asanaCsvfile, dialect='excel')
-	csvwriter.writerow(['Name', 'Description', 'Assignee', 'Collaborators', 'Due Date', 'Section / Column', 'Subtask of', 'Status', 'Priority', 'Type', 'Reporter', 'Components', 'Labels', 'JiraKey', 'Created'])
+	csvwriter.writerow(['Name', 'Description', 'Assignee', 'Collaborators', 'Due Date', 'Section / Column', 'Subtask of', 'Status', 'Priority', 'Type', 'Created by', 'Components', 'Labels', 'JiraKey', 'Created on'])
 
 	def mapAndWriteRow(row):
 		title = getValue(row, "Summary")
@@ -52,8 +52,8 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 		jiraKey = getValue(row, "Issue key")
 		components = ",".join(getValues(row, "Component/s"))
 		labels = ",".join(getValues(row, "Labels"))
-
 		created = getValue(row, "Created")
+
 		createdDate = datetime.strptime(created[:10], '%d.%m.%Y')
 		createdField = datetime.strftime(createdDate, '%m/%d/%y')
 
@@ -69,20 +69,20 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 		descriptionField += "\nReporter: " + reporter
 		descriptionField += "\nCreator: " + creator
 		descriptionField += "\nLast updated: " + updated
-		if labels: descriptionField += "\nLabels: " + labels
 		if description: descriptionField += "\n\n" + description
 		if comments: descriptionField += "\n\n" + comments
 
-		reporterField = reporter if "@schibsted.com" in reporter else None
+		createdByField = reporter if "@schibsted.com" in reporter else None
 		assigneeField = assignee if "@schibsted.com" in assignee else None
 		section = sprint if sprint else "Backlog"
 
 		# TODO: Remove these in final run:
-		reporterField =  "ole.lynge.soerensen@schibsted.com"
+		createdByField =  "ole.lynge.soerensen@schibsted.com"
 		assigneeField = None
 		collaborators = None
 
-		csvwriter.writerow([title, descriptionField, assigneeField, collaborators, dueDate, section, subtaskOf, status, priority, issueType, reporterField, components, labels, jiraKey, createdField])
+		csvwriter.writerow([title, descriptionField, assigneeField, collaborators, dueDate, section, subtaskOf, status, priority, issueType, createdByField, components, labels, jiraKey, createdField])
+
 
 	with open(jiraCsvFileName, newline='') as f:
 		reader = csv.reader(f)
@@ -99,6 +99,7 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 				mapAndWriteRow(row)
 			rowIndex += 1
 			if sampleSize > 0 and rowIndex > sampleSize: break
+
 
 	asanaCsvfile.close()
 	logFile.close()
