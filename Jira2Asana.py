@@ -12,6 +12,7 @@ sampleSize = 10
 
 def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 	fileNameWithoutExtension = jiraCsvFileName[:-4]
+
 	logFileName = "Log-" + fileNameWithoutExtension + ".txt"
 	logFile = open(logFileName, 'w')
 	def log(message):
@@ -33,13 +34,6 @@ def convertJiraCsvToAsanaCsv(jiraCsvFileName):
 		watchers = [x for index, x in enumerate(row) if x and header[index] == "Watchers"]
 		collaborators = set([x for x in people + watchers if "@schibsted.com" in x])
 		return ",".join(collaborators)
-
-	def concatIf(row, fromIndex, toIndex):
-		values = []
-		for value in row[fromIndex:toIndex+1]:
-			if value:
-				values.append(value)
-		return ",".join(values)
 
 	asanaCsvFileName = "Asana-" + fileNameWithoutExtension + ".csv"
 	asanaCsvfile = open(asanaCsvFileName, 'w')
